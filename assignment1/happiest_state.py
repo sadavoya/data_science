@@ -167,11 +167,12 @@ def get_keys(d):
     return d.keys()
 
 def get_keys_of(dicts, f=get_keys):
-    result_keys = []
+    result_keys = {}
     for d in dicts:
         for key in f(d):
             if key not in result_keys:
-                result_keys.append(key)
+                result_keys[key] = None
+    result_keys = result_keys.keys()
     result_keys.sort()
     return result_keys
 
@@ -208,7 +209,7 @@ def print_useful_keys(tweets):
     print
     users = []
     for result in results:
-        if Tweet.Result.Keys.user in result.keys() \
+        if Tweet.Result.Keys.user in result \
             and result[Tweet.Result.Keys.user] <> None:
                 users.append(result[Tweet.Result.Keys.user])
     print "Location keys"
@@ -281,21 +282,20 @@ def get_tweets_from_file(tweet_file_name):
     tweet_file.close()
     return tweets
 
-def score_tweets(tweet_file_name, scores):
+def score_tweets(tweets, scores):
     """(str, dict of {str:int}) -> list of int
     Opens the specified tweet_file_name and uses the scores dictionary
     to build a score for each tweet. Returns a list containing the score
     for each tweet, in the order they appeared in the tweet file.
     """
-    tweets = get_tweets_from_file(tweet_file_name)
     tweet_scores = []
     for tweet in tweets:
         tweet_scores.append((tweet, score_tweet(tweet, scores)))
     return tweet_scores
 
 def score_tweet(tweet, scores):
-    if Tweet.Result.Keys.text not in tweet.keys():
-        return (tweet, 0)
+    if Tweet.Result.Keys.text not in tweet:
+        return 0
     text = tweet[Tweet.Result.Keys.text]
     words = text.split()
     score = 0
@@ -310,13 +310,13 @@ def score_tweet(tweet, scores):
         for key in scores[i].keys():
             if key in text:
                 score += scores[i][key]
-    return (tweet, score)
+    return score
 
 def split_scores(scores):
     returnVal = {}
     for key in scores.keys():
         key_len = len(str(key).split())
-        if key_len not in returnVal.keys():
+        if key_len not in returnVal:
             returnVal[key_len] = {}
         returnVal[key_len][key] = scores[key]
     return returnVal
@@ -327,7 +327,7 @@ def get_happiest_state(tweet_scores):
     pass
 
 def get_at_key(d, key):
-    if key in d.keys():
+    if key in d:
         return d[key]
 
 def main():
@@ -337,21 +337,38 @@ def main():
     scores = split_scores(scores)
 
 
-    tweet_scores = score_tweets(tweet_file_name, scores)
-    tweets = {}
-    tweets[Tweet.Keys.results] = get_tweets_from_file(tweet_file_name)
+    tweets = get_tweets_from_file(tweet_file_name)
+    tweet_scores = score_tweets(tweets, scores)
     #print_useful_keys(tweets)
     usable_tweets = []
-    for tweet in tweets[Tweet.Keys.results]:
-        coordinates = get_at_key(tweet, Tweet.Result.Keys.coordinates)
+    for tweet in tweets:
+        #coordinates = get_at_key(tweet, Tweet.Result.Keys.coordinates)
         place = get_at_key(tweet, Tweet.Result.Keys.place)
-        user = get_at_key(tweet, Tweet.Result.Keys.user)
-        if user <> None:
-            user_location = get_at_key(user, Tweet.Result.User.location)
-        if coordinates <> None or place <> None or user_location <> None:
-            usable_tweets.append((tweet, coordinates, place, user_location))
-
-
+        #user = get_at_key(tweet, Tweet.Result.Keys.user)
+        #user_location = None
+        #if user <> None:
+        #    user_location = get_at_key(user, Tweet.Result.User.location)
+        #if coordinates <> None or place <> None or user_location <> None:
+        if place <> None and place[Tweet.Result.Place.country_code].upper() == "US":
+            #usable_tweets.append((tweet, coordinates, place, user_location))
+            usable_tweets.append((tweet, place))
+    print len(usable_tweets)
+    us_places = []
+    for (tweet, place) in usable_tweets:
+        print place
+    #for (tweet, coordinates, place, user_location) in usable_tweets:
+    #    if place <> None:
+    #        if place[Tweet.Result.Place.country_code] == "US":
+    #            us_places.append((tweet, coordinates, place, user_location))
+    #            print place
+    #print len(us_places)
+    #us_places = []
+    #for (tweet, coordinates, place, user_location) in usable_tweets:
+    #    if place <> None:
+    #        if place[Tweet.Result.Place.country_code] == "US":
+    #            us_places.append((tweet, coordinates, place, user_location))
+    #            print place
+    #print len(us_places)
 
 
 if __name__ == '__main__':
