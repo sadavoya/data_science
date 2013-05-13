@@ -352,7 +352,7 @@ def main():
         if place <> None and place[Tweet.Result.Place.country_code].upper() == "US":
             #usable_tweets.append((tweet, coordinates, place, user_location))
             usable_tweets.append((tweet, place, score))
-    print len(usable_tweets)
+    #print len(usable_tweets)
     us_places = []
     happy_states = {}
     for (tweet, place, score) in usable_tweets:
