@@ -332,7 +332,7 @@ def get_at_key(d, key):
 
 def main():
     sent_file_name = get_argv(1, "AFINN-111.txt")
-    tweet_file_name = get_argv(2, "tweets_1000.txt")
+    tweet_file_name = get_argv(2, "tweets_5000.txt")
     scores = build_scores(sent_file_name)
     scores = split_scores(scores)
 
@@ -341,7 +341,7 @@ def main():
     tweet_scores = score_tweets(tweets, scores)
     #print_useful_keys(tweets)
     usable_tweets = []
-    for tweet in tweets:
+    for (tweet, score) in tweet_scores:
         #coordinates = get_at_key(tweet, Tweet.Result.Keys.coordinates)
         place = get_at_key(tweet, Tweet.Result.Keys.place)
         #user = get_at_key(tweet, Tweet.Result.Keys.user)
@@ -351,11 +351,23 @@ def main():
         #if coordinates <> None or place <> None or user_location <> None:
         if place <> None and place[Tweet.Result.Place.country_code].upper() == "US":
             #usable_tweets.append((tweet, coordinates, place, user_location))
-            usable_tweets.append((tweet, place))
+            usable_tweets.append((tweet, place, score))
     print len(usable_tweets)
     us_places = []
-    for (tweet, place) in usable_tweets:
-        print place
+    happy_states = {}
+    for (tweet, place, score) in usable_tweets:
+        if Tweet.Result.Place.full_name in place and place[Tweet.Result.Place.full_name] <> None:
+            state = place[Tweet.Result.Place.full_name][-2:]
+            if state in states:
+                if state not in happy_states:
+                    happy_states[state] = 0
+                happy_states[state] += score
+    sortstates = sorted(happy_states, reverse=True, key=happy_states.get)
+    #for state in sortstates:
+    #    print state, happy_states[state]
+    state = sortstates[0]
+    print state, happy_states[state]
+
     #for (tweet, coordinates, place, user_location) in usable_tweets:
     #    if place <> None:
     #        if place[Tweet.Result.Place.country_code] == "US":
