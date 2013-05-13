@@ -366,7 +366,7 @@ def main():
     #for state in sortstates:
     #    print state, happy_states[state]
     state = sortstates[0]
-    print state, happy_states[state]
+    print state#, happy_states[state]
 
     #for (tweet, coordinates, place, user_location) in usable_tweets:
     #    if place <> None:
